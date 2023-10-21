@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precio del oro</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <div class="contenedor-superior">
+        <div><a href="/registro">REGISTRO</a></div>
+        <div style="margin-bottom: 40px;"></div>
+        <div><a href="/entrada">ENTRADA</a></div>
+        <div style="margin-bottom: 40px;"></div>
+        <div><a href="/salida">SALIDA</a></div>
+    </div>
+
+    <p>{{mi_variable}}{{idusuario}}{{ultimovalor}}</p>
+    <div style="margin-bottom: 10px;"></div>
+
+    <div class="{% if mostrar_clase %}visible{% else %}oculta{% endif %}">
+        <form action="/media_lo" method="post">
+            <div class="boton-con-texto">
+                <button>&nbsp;&nbsp;MEDIA BBDD LOCAL&nbsp;&nbsp;</button>
+                <span class="texto-derecha">media={{media_local}}</span>
+            </div>
+        </form>
+
+        <form action="/media_int" method="post">
+            <div class="boton-con-texto">
+                <button>&nbsp;&nbsp;MEDIA BBDD INTERNET&nbsp;&nbsp;</button>
+                <span class="texto-derecha">media={{media_internet}}</span>
+            </div>
+        </form>
+
+        <div class="boton-con-texto">
+            <button>&nbsp;&nbsp;Nº MEDIAS SOLICITADAS&nbsp;&nbsp;</button>
+            <span class="texto-derecha">media={{contador}}</span>
+        </div>
+
+        <form action="/graficas" method="post">
+            <div class="boton-con-texto">
+                <button>&nbsp;&nbsp;GRÁFICAS EXTERNAS&nbsp;&nbsp;</button>
+            </div>
+        </form>
+
+	<div style="margin-bottom: 5px;"></div>
+        <form action="/umbral_historico" method="POST">
+            <label for="umbral">Umbral:</label>
+            <input type="text" id="umbral" name="umbral">
+            <button type="submit">Enviar</button>
+        </form>
+        <p>Umbral actual: {{ umbral }}</p>
+	<p>Últimos valores que superaron el umbral: {{ ultimo_valor_1 }}, {{ ultimo_valor_2 }}, {{ ultimo_valor_3 }}, {{ ultimo_valor_4 }}, {{ ultimo_valor_5 }}</p>
+
+</p>
+       
+        
+
+    </div>
+</body>
+
+</html>
+
+
+

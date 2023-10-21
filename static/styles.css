@@ -1,0 +1,92 @@
+body {
+    background-color: #add8e6;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+/* Estilo para los enlaces y botones */
+a, button {
+    background-color: #ff66b2;
+    color: white;
+    padding: 10px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100px;
+    font-size: 14px; /* Ajusta el tamaño de fuente para el tamaño deseado */
+}
+
+.contenedor-superior {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #f0f0f0;
+    margin-bottom: 20px;
+}
+
+.contenedor-superior div {
+    flex: 1;
+    text-align: center;
+}
+
+/* Estilo específico para los botones */
+.contenedor-superior button {
+    max-width: none; /* Evita que los botones tengan un ancho máximo */
+}
+
+
+
+.centrado {
+    margin-bottom: 20px;
+}
+
+/* Estilo para el contenedor de los botones de abajo */
+.contenedor-inferior {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* Estilo para los botones de abajo */
+.contenedor-inferior a, .contenedor-inferior button {
+    background-color: #0b4885;
+}
+
+/* ... (tu código CSS existente) ... */
+
+/* Nuevo estilo para el contenedor de botones con texto a la derecha */
+.boton-con-texto {
+    display: flex;
+    align-items: center;
+}
+
+/* Nuevo estilo para el texto a la derecha */
+.texto-derecha {
+    margin-left: 10px; /* Ajusta el margen según sea necesario */
+}
+
+/* Define estilos para la clase 'oculta' */
+.oculta {
+    display: none;
+}
+
+/* Define estilos para la clase 'visible' (pueden ser los mismos que los estilos por defecto) */
+.visible {
+    display: block;
+}
+

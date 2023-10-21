@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precio del oro</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+
+<div class="contenedor-superior">
+    <div><a href="/registro">REGISTRO</a></div>
+    <div style="margin-bottom: 40px;"></div>
+    <div><a href="/entrada">ENTRADA</a></div>
+    <div style="margin-bottom: 40px;"></div>
+    <div><a href="/salida">SALIDA</a></div>
+</div>
+
+<div class="centrado">
+    <p style="padding-left: 20px; padding-bottom: 20px;">&nbsp;</p>
+     <p>{{mi_variable}}</p>
+    <div style="margin-bottom: 20px;"></div>
+
+    <form action="/" method="post">
+        <p><label>Usuario:</label> <input name="usuario" type="text" /></p>
+        <p><label>Correo:</label> <input name="correo" type="text" /></p>
+        <p><label>Contraseña:</label> <input name="password" type="text" /></p>
+        <p><input class="boton-comun" type="submit" name="accion" value="registro" /></p>
+    </form>
+
+    <p style="padding-bottom: 20px;">&nbsp;</p>
+</div>
+
+</body>
+
+</html>
+
+
+
