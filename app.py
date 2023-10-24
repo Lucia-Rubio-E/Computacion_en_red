@@ -1,13 +1,23 @@
-from flask import Flask, render_template, request,redirect, url_for
+from flask import Flask, render_template, request,redirect, url_for, Response
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 import time
 from elasticsearch import Elasticsearch
 import requests
 import datetime
 import json
-from datetime import datetime, timedelta
+#from datetime import datetime, timedelta
+import asyncio 					# biblio de fecha y hora
+import re    								# biblio expresiones regulares
+
+from selenium import webdriver  					# importa selenium
+from selenium.webdriver.chrome.options import Options  			# opciones navegador chrome
+from selenium.webdriver.common.by import By 				# para localización de elementos
+from selenium.webdriver.support.ui import WebDriverWait 		# espera explícita de selenium
+from selenium.webdriver.support import expected_conditions as EC 	# espera de las condiciones de selenium
+
+import hashlib
+
+
 
 app = Flask(__name__)				# inicio la app de flask
 						# variables globales
@@ -17,6 +27,7 @@ mi_variable3 = "Sesión con el usuario "
 mi_variable4 ="El usuario ya está registrado "
 mi_variable5="Contraseña incorrecta"
 mi_variable6="El usuario no existe"
+mi_variable7=None
 blanco = "   "
 usuario = None
 datoglobal = None
@@ -24,17 +35,24 @@ datoglobal = None
 mediaoro_local=0
 mediaoro_internet=0
 contador=0
+
 						# conectamos con elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 index_usuarios = 'usuarios_indice'
 
 umbral = 0
+umbral_actual = None
+dato_actual = None
+dato_anterior = None
+fecha_actual = None
+contador2=0
 ultimos_valores = []
 ultimo_valor_1=0
 ultimo_valor_2=0
 ultimo_valor_3=0
 ultimo_valor_4=0
 ultimo_valor_5=0
+
 
 
 def calcular_media_oro_local():			# se calcula la media del oro de la base de datos local
@@ -86,7 +104,6 @@ def calcular_media_oro_internet():
     return None
 
 
-
 @app.route('/', methods=['GET', 'POST'])
 def menupp():
     global mediaoro_local, mediaoro_internet, usuario, datoglobal
@@ -94,7 +111,11 @@ def menupp():
     if request.method == 'POST':
         accion = request.form.get('accion')
         usuario = request.form.get('usuario')
-        password = request.form.get('password')
+        password2 = request.form.get('password')
+
+        password_bytes = password2.encode()
+        password = hashlib.md5(password_bytes).hexdigest()
+
         mediaoro_local = calcular_media_oro_local()
         mediaoro_internet = calcular_media_oro_internet()
         
@@ -235,11 +256,10 @@ def procesar_umbral_historico():
         
     print(umbral1)
 
-    global ultimo_valor_1
-    global ultimo_valor_2
-    global ultimo_valor_3
-    global ultimo_valor_4
-    global ultimo_valor_5
+    global ultimo_valor_1, ultimo_valor_2, ultimo_valor_3, ultimo_valor_4, ultimo_valor_5
+    global dato_actual, fecha_actual
+    dato_actual, fecha_hora = obtener_precio_y_tiempo()
+   
     
     if len(valores_superiores) >= 5:
         ultimo_valor_1 = valores_superiores[-1]
@@ -254,13 +274,61 @@ def procesar_umbral_historico():
         
     return render_template('menupp.html', umbral=umbral1, media_local=mediaoro_local, media_internet=mediaoro_internet, contador=contador, idusuario=usuario, mostrar_clase=True, ultimo_valor_1=ultimo_valor_1, ultimo_valor_2=ultimo_valor_2, ultimo_valor_3=ultimo_valor_3, ultimo_valor_4=ultimo_valor_4, ultimo_valor_5=ultimo_valor_5)
 
+    
+@app.route('/notifications')
+def sse_notifications():
+    
+    def event_stream():
+        global dato_actual
+        while True:
+            precio2, fecha_hora = obtener_precio_y_tiempo()
+            if dato_actual != None:
+                if precio2 != dato_actual:
+                    dato_actual = precio2
+                    yield f"data: Umbral superado\n\n"  
+                
+                else:
+                    yield f"data: \n\n"
+    return Response(event_stream(), content_type='text/event-stream')
+
+
+def obtener_precio_y_tiempo():
+    url = 'https://es.investing.com/commodities/gold'
+
+    try:
+        options = Options()
+        options.add_argument('--headless')
+        driver = webdriver.Chrome(options=options)
+        driver.get(url)
+
+        wait = WebDriverWait(driver, 1)
+        wait.until(EC.presence_of_element_located((By.ID, '__next')))
+        page_source = driver.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
+
+        precio_oro_match = re.search(r'text-5xl[^>]*>([^<]+)<', str(soup))
+        precio_oro = precio_oro_match.group(1).replace('.', '').replace(',', '.').strip() if precio_oro_match else None
+
+        if precio_oro:
+            fecha_hora_actual = datetime.datetime.now()
+            formatted_date_time = fecha_hora_actual.strftime("%Y-%m-%d %H:%M:%S")
+            return float(precio_oro.replace(',', '.')), formatted_date_time
+        else:
+            print('No se encontró el elemento div con la clase text-5xl.')
+            return None, None
+
+    except Exception as e:
+        print(f"Error al obtener el precio y tiempo: {e}")
+        return None, None
+    finally:
+        driver.quit()
 
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
-    
-    
-    
+
+
+
 
 
 

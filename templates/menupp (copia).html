@@ -17,20 +17,20 @@
         <div><a href="/salida">SALIDA</a></div>
     </div>
 
-<div style="margin-bottom: 10px;"></div>
     <p>{{mi_variable}}{{idusuario}}{{ultimovalor}}</p>
-    
+    <div style="margin-bottom: 10px;"></div>
+
     <div class="{% if mostrar_clase %}visible{% else %}oculta{% endif %}">
         <form action="/media_lo" method="post">
             <div class="boton-con-texto">
-                <button>MEDIA LOCAL</button>
+                <button>MEDIA BBDD LOCAL</button>
                 <span class="texto-derecha">media={{media_local}}</span>
             </div>
         </form>
 
         <form action="/media_int" method="post">
             <div class="boton-con-texto">
-                <button>MEDIA INTERNET</button>
+                <button>MEDIA BBDD INTERNET</button>
                 <span class="texto-derecha">media={{media_internet}}</span>
             </div>
         </form>
@@ -46,7 +46,7 @@
             </div>
         </form>
 
-        <div style="margin-bottom: 5px;"></div>
+	<div style="margin-bottom: 5px;"></div>
         <form action="/umbral_historico" method="POST">
             <label for="umbral">Umbral:</label>
             <input type="text" id="umbral" name="umbral">
@@ -54,41 +54,22 @@
         </form>
         <p>Umbral actual: {{ umbral }}  ,  últimos valores que superaron el umbral: {{ ultimo_valor_1 }}, {{ ultimo_valor_2 }}, {{ ultimo_valor_3 }}, {{ ultimo_valor_4 }}, {{ ultimo_valor_5 }}</p>
 
-      
-
-        
-  <p id="contadorElement"></p>
-
-<script>
-    var eventSource = new EventSource('/notifications');
-    var timer;
-
-    eventSource.onmessage = function(event) {
-        var message = event.data;
-        if (message !== '') {
-            contadorElement.innerText = `Se ha superado el umbral`;
-
-            clearTimeout(timer); 
-            timer = setTimeout(function() {
-                contadorElement.innerText = ""; 
-            }, 4000); 
-        }
-    };
-
-    eventSource.onerror = function(error) {
-        console.error('Error en la fuente de eventos:', error);
-        eventSource.close();
-    };
-</script>
-
-
-
-
-</body>
-        
-    </div>
+<form method="post" action="/umbral_actual">
+        <label for="nuevo_umbral">Nuevo Umbral:</label>
+        <input type="text" id="nuevo_umbral" name="nuevo_umbral">
+        <button type="submit">Configurar Umbral</button>
+    </form>
     
+    <p>Umbral Actual: {{ umbral_actual }} Dato actual: {{ dato_actual }} , {{ fecha_actual }}  {{ mi_variable7 }} </p>
+    
+</p>
+       
+        
+
+    </div>
 </body>
 
 </html>
+
+
 
