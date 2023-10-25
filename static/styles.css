@@ -14,8 +14,8 @@ body {
 a, button {
     background-color: #ff66b2;
     color: white;
-    padding: 10px;
-    margin: 10px;
+    padding: 8px;
+    margin: 8px;
     border: none;
     border-radius: 5px;
     text-decoration: none;
@@ -23,7 +23,7 @@ a, button {
     box-sizing: border-box;
     width: 100%;
     max-width: 100px;
-    font-size: 14px; /* Ajusta el tamaño de fuente para el tamaño deseado */
+    font-size: 12px; /* Ajusta el tamaño de fuente para el tamaño deseado */
 }
 
 .contenedor-superior {

@@ -5,7 +5,6 @@ from elasticsearch import Elasticsearch
 import requests
 import datetime
 import json
-#from datetime import datetime, timedelta
 import asyncio 					# biblio de fecha y hora
 import re    								# biblio expresiones regulares
 
@@ -16,8 +15,6 @@ from selenium.webdriver.support.ui import WebDriverWait 		# espera explícita de
 from selenium.webdriver.support import expected_conditions as EC 	# espera de las condiciones de selenium
 
 import hashlib
-
-
 
 app = Flask(__name__)				# inicio la app de flask
 						# variables globales
@@ -40,8 +37,10 @@ contador=0
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 index_usuarios = 'usuarios_indice'
 
-umbral = 0
+umbral1 = 0
+umbral2 = 0
 umbral_actual = None
+umbral_historico=None
 dato_actual = None
 dato_anterior = None
 fecha_actual = None
@@ -81,7 +80,7 @@ def calcular_media_oro_internet():
     url = f"{urlBase}comp/{compId}/stream/{streamId}/feed?api_key={api_key}"
     response = requests.get(url)    
     json = response.json()
-    print(str(json))
+    #print(str(json))
     
     # Comprobar si la solicitud fue exitosa
     if response.status_code == 200:
@@ -104,18 +103,20 @@ def calcular_media_oro_internet():
     return None
 
 
+
 @app.route('/', methods=['GET', 'POST'])
 def menupp():
     global mediaoro_local, mediaoro_internet, usuario, datoglobal
+    fechahora2=0
     
     if request.method == 'POST':
         accion = request.form.get('accion')
         usuario = request.form.get('usuario')
+        
         password2 = request.form.get('password')
-
         password_bytes = password2.encode()
-        password = hashlib.md5(password_bytes).hexdigest()
 
+        password = hashlib.md5(password_bytes).hexdigest()
         mediaoro_local = calcular_media_oro_local()
         mediaoro_internet = calcular_media_oro_internet()
         
@@ -175,25 +176,7 @@ def menupp():
 
     else:	#si la solicitud no es POST (es GET)
 	
-        try:			#config de opciones para selenium (navegador headless)
-            options = Options()
-            options.add_argument('--headless')
-            driver = webdriver.Chrome(options=options)
-            driver.get('https://es.investing.com/commodities/gold')  #accede a url
-
-            time.sleep(2) #espera a q la pag carge 2 segundos para que la pag se cargue completamente
-
-            page_source = driver.page_source	#obtiene el código fuente de la pag
-            soup = BeautifulSoup(page_source, 'html.parser')		#crea objeto beautifulsoup para analizar código HTML	
-            precio_oro_match = soup.find('div', class_='text-5xl')	#se busca elemento con clase text-5xl
-            
-            datos = precio_oro_match.get_text(strip=True) if precio_oro_match else None		#para obtener el texto del elemento 
-            datoglobal = datos
-            driver.quit()		#cierra navegador
-
-        except Exception as e:
-            print(f"Error: {str(e)}")	#si hay un error , imprime el mensaje error y la excepción 
-            return None
+        datoglobal,fechahora2=obtener_precio_y_tiempo()
                 
     return render_template('menupp.html', mi_variable=mi_variable1, idusuario=blanco, ultimovalor=datoglobal, mostrar_clase=False,media_local=mediaoro_local,media_internet=0)
 
@@ -235,7 +218,7 @@ def vuelve_menu():
 @app.route('/umbral_historico', methods=['POST'])
 def procesar_umbral_historico():
     global umbral1
-    umbral1 = float(request.form['umbral'])
+    umbral1 = float(request.form['umbral_historico'])
 
     api_key = 'f4498315-666b-3d76-9e7c-7240775f96d2'
     compId = "precios"
@@ -245,16 +228,11 @@ def procesar_umbral_historico():
     url = f"{urlBase}comp/{compId}/stream/{streamId}/feed?api_key={api_key}"
     response = requests.get(url)    
     data = response.json()
-    print(str(data))
+    #print(str(data))
     
 
     data = response.json()
     valores_superiores = [punto['data'] for punto in data if punto['data'] > umbral1]
-
-    for valor in data:
-        print(valor)
-        
-    print(umbral1)
 
     global ultimo_valor_1, ultimo_valor_2, ultimo_valor_3, ultimo_valor_4, ultimo_valor_5
     global dato_actual, fecha_actual
@@ -272,9 +250,23 @@ def procesar_umbral_historico():
     else:
         print('NO hay suficientes valores para mostrar')
         
-    return render_template('menupp.html', umbral=umbral1, media_local=mediaoro_local, media_internet=mediaoro_internet, contador=contador, idusuario=usuario, mostrar_clase=True, ultimo_valor_1=ultimo_valor_1, ultimo_valor_2=ultimo_valor_2, ultimo_valor_3=ultimo_valor_3, ultimo_valor_4=ultimo_valor_4, ultimo_valor_5=ultimo_valor_5)
+    return render_template('menupp.html', umbral_historico=umbral1, media_local=mediaoro_local, media_internet=mediaoro_internet, contador=contador, idusuario=usuario, mostrar_clase=True, ultimo_valor_1=ultimo_valor_1, ultimo_valor_2=ultimo_valor_2, ultimo_valor_3=ultimo_valor_3, ultimo_valor_4=ultimo_valor_4, ultimo_valor_5=ultimo_valor_5)
 
+
+
+@app.route('/umbral_actual', methods=['POST'])
+def procesar_umbral_actual():
+    global umbral2
+    umbral2 = float(request.form['umbral_actual'])
     
+    
+    global dato_actual, fecha_actual
+    dato_actual, fecha_hora = obtener_precio_y_tiempo()
+   
+        
+    return render_template('menupp.html', umbral_actual=umbral2, media_local=mediaoro_local, media_internet=mediaoro_internet, contador=contador, idusuario=usuario, mostrar_clase=True, ultimo_valor_1=ultimo_valor_1, ultimo_valor_2=ultimo_valor_2, ultimo_valor_3=ultimo_valor_3, ultimo_valor_4=ultimo_valor_4, ultimo_valor_5=ultimo_valor_5)
+
+
 @app.route('/notifications')
 def sse_notifications():
     
@@ -282,14 +274,14 @@ def sse_notifications():
         global dato_actual
         while True:
             precio2, fecha_hora = obtener_precio_y_tiempo()
-            if dato_actual != None:
-                if precio2 != dato_actual:
+            if umbral2 is not None:
+                if precio2 > umbral2 and precio2 != dato_actual:
                     dato_actual = precio2
                     yield f"data: Umbral superado\n\n"  
-                
                 else:
-                    yield f"data: \n\n"
+                    yield f"data: {fecha_hora}: {dato_actual}\n\n"
     return Response(event_stream(), content_type='text/event-stream')
+
 
 
 def obtener_precio_y_tiempo():

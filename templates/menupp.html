@@ -47,16 +47,22 @@
         </form>
 
         <div style="margin-bottom: 5px;"></div>
-        <form action="/umbral_historico" method="POST">
-            <label for="umbral">Umbral:</label>
-            <input type="text" id="umbral" name="umbral">
-            <button type="submit">Enviar</button>
-        </form>
-        <p>Umbral actual: {{ umbral }}  ,  últimos valores que superaron el umbral: {{ ultimo_valor_1 }}, {{ ultimo_valor_2 }}, {{ ultimo_valor_3 }}, {{ ultimo_valor_4 }}, {{ ultimo_valor_5 }}</p>
-
-      
+       <form action="/umbral_historico" method="POST">
+    <label for="umbral_historico" style="display: inline-block; width: 100px;">Umbral:</label>
+    <input type="text" id="umbral_historico" name="umbral_historico" style="display: inline-block;">
+    <button type="submit" style="display: inline-block;">Enviar</button>
+</form>
 
         
+        <form action="/umbral_actual" method="POST">
+    <label for="umbral_actual" style="display: inline-block; width: 100px;">Umbral:</label>
+    <input type="text" id="umbral_actual" name="umbral_actual" style="display: inline-block;">
+    <button type="submit" style="display: inline-block;">Enviar</button>
+    </form>
+
+        
+        <p>Umbral histórico: {{ umbral_historico }} Umbral actual: {{ umbral_actual}}</p>
+        <p>Umbral histórico (últimos 5 datos): {{ ultimo_valor_1 }}, {{ ultimo_valor_2 }}, {{ ultimo_valor_3 }}, {{ ultimo_valor_4 }}, {{ ultimo_valor_5 }}</p>
   <p id="contadorElement"></p>
 
 <script>
@@ -66,12 +72,7 @@
     eventSource.onmessage = function(event) {
         var message = event.data;
         if (message !== '') {
-            contadorElement.innerText = `Se ha superado el umbral`;
-
-            clearTimeout(timer); 
-            timer = setTimeout(function() {
-                contadorElement.innerText = ""; 
-            }, 4000); 
+            contadorElement.innerText = message;
         }
     };
 
