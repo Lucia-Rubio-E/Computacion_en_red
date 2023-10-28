@@ -10,7 +10,18 @@ from selenium.webdriver.support.ui import WebDriverWait 		# espera explícita de
 from selenium.webdriver.support import expected_conditions as EC 	# espera de las condiciones de selenium
 from elasticsearch import Elasticsearch					# importa elasticsearch para la bbddlocal
 
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])		# para conectar a elasticsearch en localhost y puerto 9200
+def create_node_config(scheme, host, port):
+    return {
+        'scheme': scheme,
+        'host': host,
+        'port': port
+    }
+
+# Crear la configuración del nodo para Elasticsearch
+node_config = create_node_config('http', 'localhost', 9200)
+
+# Configuración de la conexión a Elasticsearch
+es = Elasticsearch([node_config])
 
 def obtener_precio_y_tiempo():						# obtener el precio del oro y la hora actual
 
@@ -48,7 +59,7 @@ while True:								# bucle infinito para obtener y subir datos continuamente
 
     if precio_oro is not None and timestamp is not None:
         doc = {"gold_price": precio_oro, "timestamp": timestamp}# crea un doc con el precio del oro y la fecha y hora actual
-        es.index(index='datos_oro', doc_type='_doc', body=doc, size = 1000) # indexamos el doc en elasticsearch en el índice 'datos_oro'
+        es.index(index='datos_oro', body=doc)
         es.indices.refresh(index='datos_oro')				# refresca el índice en elasticsearch
         print(f'Dato subido: {doc}')					# imprime un mensaje indicando que se ha subido un dato
         time.sleep(120)							# cada 120segundos

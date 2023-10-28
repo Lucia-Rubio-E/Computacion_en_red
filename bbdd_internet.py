@@ -27,7 +27,6 @@ def obtener_precio_y_tiempo():
         page_source = driver.page_source
         soup = BeautifulSoup(page_source, 'html.parser')
 
-
         precio_oro_match = re.search(r'text-5xl[^>]*>([^<]+)<', str(soup))
         precio_oro = precio_oro_match.group(1).replace('.', '').replace(',', '.').strip() if precio_oro_match else None
 
@@ -102,10 +101,4 @@ if __name__ == '__main__':
                     conn.close()
 
             time.sleep(120)
-
-
-
-
-
-
 

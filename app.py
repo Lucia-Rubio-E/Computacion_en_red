@@ -33,8 +33,20 @@ mediaoro_local=0
 mediaoro_internet=0
 contador=0
 
-						# conectamos con elasticsearch
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+def create_node_config(scheme, host, port):
+    return {
+        'scheme': scheme,
+        'host': host,
+        'port': port
+    }
+
+# Crear la configuración del nodo para Elasticsearch
+node_config = create_node_config('http', 'localhost', 9200)
+
+# Configuración de la conexión a Elasticsearch
+es = Elasticsearch([node_config])
+
+
 index_usuarios = 'usuarios_indice'
 
 umbral1 = 0
@@ -138,7 +150,7 @@ def menupp():
                             return render_template('registro.html', mi_variable=mi_variable4)
                         
                     print(f'El usuario NO está ya registrado, se va a registrar')
-                    es.index(index=index_usuarios, doc_type='_doc', body=datos_usuario)
+                    es.index(index=index_usuarios, body=datos_usuario)
                     es.indices.refresh(index=index_usuarios)
                     print(f'Documento indexado en Elasticsearch: {datos_usuario}')
                     print(f'El usuario: {usuario} se ha registrado con la Contraseña: {password}')
